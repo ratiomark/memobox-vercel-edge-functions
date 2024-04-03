@@ -30,14 +30,13 @@ async function getNotificationsByLangAndTime(language: string) {
 	const collection = db.collection<TrainingNotificationItem>('email_notifications')
 
 	const twoMinutesLater = new Date(new Date().getTime() + 2 * 60 * 1000)
-	const notifications = await collection.find().toArray()
-	// const notifications = await collection
-	// 	.find({
-	// 		user_language: language,
-	// 		notificationTime: { $lt: twoMinutesLater },
-	// 	})
-	// 	.toArray()
-
+	const notifications = await collection
+		.find({
+			user_language: language,
+			notificationTime: { $lt: twoMinutesLater },
+		})
+		.toArray()
+	console.log('notifications', notifications)
 	return notifications
 }
 
