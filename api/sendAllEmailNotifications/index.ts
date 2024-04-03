@@ -144,7 +144,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			const prefix = 'api/v1/'
 			const endpoint = 'notifications/recalculateNotifications'
 
-			// console.log('sendEmailResults:', sendEmailResults)
+			console.log('sendEmailResults:  ', sendEmailResults)
+			console.log('backend full url:  ', backendUrl + prefix + endpoint)
 
 			const response = await fetch(backendUrl + prefix + endpoint, {
 				method: 'POST',
