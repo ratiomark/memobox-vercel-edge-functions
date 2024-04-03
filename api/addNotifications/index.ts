@@ -8,11 +8,11 @@ import { VercelRequest, VercelResponse } from '@vercel/node'
 import { MongoClient } from 'mongodb'
 
 const uri = process.env.MONGO_URL
+const API_SECRET_KEY = process.env.API_SECRET_KEY
 if (!uri) {
 	throw new Error('Mongo URL is not provided')
 }
 const client = new MongoClient(uri)
-
 interface TrainingNotificationItem {
 	notificationId: string
 	notificationTime: Date
@@ -34,9 +34,13 @@ async function upsertNotifications(items: TrainingNotificationItem[]) {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
+		const apiKey = req.headers['x-api-key']
 		console.log('req.body', req.body)
-		await client.connect()
+		if (apiKey !== API_SECRET_KEY) {
+			return res.status(401).json({ message: 'Invalid API Key' })
+		}
 
+		await client.connect()
 		if (req.method === 'POST') {
 			// Добавление или обновление уведомлений
 			const dbResponse = await upsertNotifications(req.body)
