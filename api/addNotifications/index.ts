@@ -26,8 +26,8 @@ interface TrainingNotificationItem {
 async function upsertNotifications(items: TrainingNotificationItem[]) {
 	const db = client.db('memobox')
 	const collection = db.collection<TrainingNotificationItem>('email_notifications')
-
-	const upsertPromises = items.map((item) => collection.updateOne({ notificationId: item.notificationId }, { $set: item }, { upsert: true }))
+	const itemsWithDate = items.map((item) => ({ ...item, notificationTime: new Date(item.notificationTime) }))
+	const upsertPromises = itemsWithDate.map((item) => collection.updateOne({ notificationId: item.notificationId }, { $set: item }, { upsert: true }))
 
 	return await Promise.all(upsertPromises)
 }
