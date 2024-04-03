@@ -43,6 +43,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		await client.connect()
 		if (req.method === 'POST') {
 			// Добавление или обновление уведомлений
+			if (!req.body) { 
+				return res.status(200).json({ message: 'Request body is empty' })
+			}
 			const dbResponse = await upsertNotifications(req.body)
 			console.log('Success', dbResponse)
 			res.status(200).send(dbResponse)
