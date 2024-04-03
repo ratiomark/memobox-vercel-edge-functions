@@ -6,8 +6,10 @@
 // }
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { MongoClient } from 'mongodb'
-
+type language = 'en' | 'ru'
+const languages: language[] = ['en', 'ru']
 const uri = process.env.MONGO_URL
+const API_SECRET_KEY = process.env.API_SECRET_KEY
 if (!uri) {
 	throw new Error('Mongo URL is not provided')
 }
@@ -22,20 +24,10 @@ interface TrainingNotificationItem {
 	name: string
 }
 
-// Функция для добавления или обновления уведомлений
-async function upsertNotifications(items: TrainingNotificationItem[]) {
-	const db = client.db('yourDatabaseName')
-	const collection = db.collection<TrainingNotificationItem>('notifications')
-
-	const upsertPromises = items.map((item) => collection.updateOne({ notificationId: item.notificationId }, { $set: item }, { upsert: true }))
-
-	await Promise.all(upsertPromises)
-}
-
 // Функция для получения уведомлений по языку пользователя и времени
 async function getNotificationsByLangAndTime(language: string) {
-	const db = client.db('yourDatabaseName')
-	const collection = db.collection<TrainingNotificationItem>('notifications')
+	const db = client.db('memobox')
+	const collection = db.collection<TrainingNotificationItem>('email_notifications')
 
 	const twoMinutesLater = new Date(new Date().getTime() + 2 * 60 * 1000)
 	const notifications = await collection
@@ -51,16 +43,20 @@ async function getNotificationsByLangAndTime(language: string) {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
 		await client.connect()
-
-		if (req.method === 'POST') {
-			// Добавление или обновление уведомлений
-			await upsertNotifications(req.body)
-			res.status(200).send('Notifications upserted successfully')
-		} else if (req.method === 'GET') {
+		const apiKey = req.headers['x-api-key']
+		console.log('req.body', req.body)
+		if (apiKey !== API_SECRET_KEY) {
+			return res.status(401).json({ message: 'Invalid API Key' })
+		}
+		// const apiKey = await getSendGridApiKey()
+		// sgMail.setApiKey(apiKey)
+		if (req.method === 'GET') {
+			const notificationItemsPromises = languages.map((lang) => getNotificationsByLangAndTime(lang))
+			const allNotificationItems = (await Promise.all(notificationItemsPromises)) as TrainingNotificationItem[][]
 			// Получение уведомлений для заданного языка
-			const language = req.query.lang as string
-			const notifications = await getNotificationsByLangAndTime(language)
-			res.status(200).json(notifications)
+			// const language = req.query.lang as string
+			// const notifications = await getNotificationsByLangAndTime(language)
+			res.status(200).json(allNotificationItems)
 		} else {
 			res.status(405).send('Method not allowed')
 		}
