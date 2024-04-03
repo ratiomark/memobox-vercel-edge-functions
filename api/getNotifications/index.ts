@@ -28,7 +28,7 @@ interface TrainingNotificationItem {
 async function getNotificationsByLangAndTime(language: string) {
 	const db = client.db('memobox')
 	const collection = db.collection<TrainingNotificationItem>('email_notifications')
-
+	
 	const twoMinutesLater = new Date(new Date().getTime() + 2 * 60 * 1000)
 	const notifications = await collection
 		.find({
