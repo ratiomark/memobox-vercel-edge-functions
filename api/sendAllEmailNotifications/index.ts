@@ -148,19 +148,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			console.log('sendEmailResults:  ', sendEmailResults)
 			console.log('backend full url:  ', backendUrl + prefix + endpoint)
 
-			const response = await fetch(backendUrl + prefix + endpoint, {
+			// const response = await fetch(backendUrl + prefix + endpoint, {
+			await fetch(backendUrl + prefix + endpoint, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(sendEmailResults),
 			})
 
-			if (!response.ok) {
-				// Обработка ошибок HTTP, если статус ответа не успешен
-				throw new Error(`HTTP error! status: ${response.status}`)
-			} else {
-				const responseData = await response.json() // предполагается, что сервер возвращает JSON
-				console.log('Response from backend:', responseData)
-			}
+			// if (!response.ok) {
+			// 	// Обработка ошибок HTTP, если статус ответа не успешен
+			// 	throw new Error(`HTTP error! status: ${response.status}`)
+			// } else {
+			// 	const responseData = await response.json() // предполагается, что сервер возвращает JSON
+			// 	console.log('Response from backend:', responseData)
+			// }
 			// const allSendGridData = await Promise.all(sendGridDataPromises)
 			// Получение уведомлений для заданного языка
 			// const language = req.query.lang as string
