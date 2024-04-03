@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite --force --host",
-    "build": "vite build",
+    "build": "tsc",
     "build:ts:check": "tsc && vite build",
     "build2": "vite build && node copy-redirects.js",
     "lint:ts": "eslint \"**/*.{ts,tsx}\" --quiet",
