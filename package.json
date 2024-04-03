@@ -1,0 +1,31 @@
+{
+  "name": "memobox-vercel-edge-functions",
+  "private": false,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite --force --host",
+    "build": "vite build",
+    "build:ts:check": "tsc && vite build",
+    "build2": "vite build && node copy-redirects.js",
+    "lint:ts": "eslint \"**/*.{ts,tsx}\" --quiet",
+    "lint:ts:all": "eslint \"**/*.{ts,tsx}\"",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.3",
+    "@typescript-eslint/eslint-plugin": "^5.59.0",
+    "@typescript-eslint/parser": "^5.59.0",
+    "@vercel/node": "^3.0.25",
+    "eslint-plugin-import": "^2.25.4",
+    "path": "^0.12.7",
+    "stylelint": "^14.5.3",
+    "typescript": "^5.4.3"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {
+    "mongodb": "^6.5.0"
+  }
+}
