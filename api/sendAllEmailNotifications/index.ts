@@ -115,7 +115,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const apiKey = req.headers['x-api-key']
 		// console.log('req.body', req.body)
 		if (apiKey !== API_SECRET_KEY) {
-			return res.status(401).json({ message: 'Invalid API Key' })
+			return res.status(422).json({ message: 'Invalid API Key' })
 		}
 		const sendGridApiKey = process.env.SEND_GRID_API_KEY
 
