@@ -1,6 +1,7 @@
 {
   "name": "memobox-vercel-edge-functions",
   "private": false,
+  "type": "module",
   "version": "0.0.0",
   "scripts": {
     "dev": "vite --force --host",
