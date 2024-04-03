@@ -103,7 +103,8 @@ async function getSendGridDataByLangAndType(language: language, emailType = Noti
 }
 
 async function getBackendUrl() {
-	const backendUrl = process.env.BACKEND_URL
+	// const backendUrl = process.env.BACKEND_URL
+	const backendUrl = 'https://qlwh4kww-3000.uks1.devtunnels.ms/'
 	if (!backendUrl) {
 		return 'https://memobox.tech/'
 	}
