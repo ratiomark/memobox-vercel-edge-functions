@@ -34,16 +34,19 @@ async function upsertNotifications(items: TrainingNotificationItem[]) {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
+		console.log('req.body', req.body)
 		await client.connect()
 
 		if (req.method === 'POST') {
 			// Добавление или обновление уведомлений
 			const dbResponse = await upsertNotifications(req.body)
+			console.log('Success', dbResponse)
 			res.status(200).send(dbResponse)
 		} else {
 			res.status(405).send('Method not allowed')
 		}
 	} catch (error) {
+		console.error('error', error)
 		res.status(500).send('Server error')
 	} finally {
 		await client.close()
