@@ -103,11 +103,11 @@ async function getSendGridDataByLangAndType(language: language, emailType = Noti
 }
 
 async function getBackendUrl() {
-	// const backendUrl = process.env.BACKEND_URL
-	const backendUrl = 'https://qlwh4kww-3000.uks1.devtunnels.ms/'
+	const backendUrl = process.env.BACKEND_URL
 	if (!backendUrl) {
 		return 'https://memobox.tech/'
 	}
+	return backendUrl
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
