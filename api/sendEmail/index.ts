@@ -57,7 +57,8 @@ async function getSendGridDataByLangAndType(language: language, emailType: strin
 // export const handler = async (request: { body: EmailParams }) => {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
-		console.log('Received request:', req)
+		console.log('Received request:', req.body)
+		// console.log('Received request:', req)
 		if (req.method !== 'POST') {
 			console.error('Invalid method')
 			return { statusCode: 405, body: 'Method not allowed' }
