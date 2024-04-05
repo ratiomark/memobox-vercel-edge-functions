@@ -56,6 +56,7 @@ async function getSendGridDataByLangAndType(language: language, emailType: strin
 // }
 // export const handler = async (request: { body: EmailParams }) => {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+	const start = performance.now()
 	try {
 		console.log('Received request:', req.body)
 		// console.log('Received request:', req)
@@ -79,7 +80,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			return { statusCode: 400, body: 'No emailType found in body' }
 		}
 
-		const sendGridApiKey = process.env.SEND_GRID_API_KEY!
+		const sendGridApiKey = process.env.SEND_GRID_API_KEY
+
+		if (!sendGridApiKey) {
+			throw new Error('SendGrid API key is not provided. End edge function execution.')
+		}
 		sgMail.setApiKey(sendGridApiKey)
 
 		let sendGridData = await getSendGridDataByLangAndType(req.body.language, req.body.emailType)
@@ -91,6 +96,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				return { statusCode: 400, body: 'No sendGridData found' }
 			}
 		}
+		// const start = performance.now()
 
 		const { name, email, templateId, subject } = sendGridData
 
@@ -114,11 +120,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			],
 			templateId,
 		}
-
+		const end = performance.now()
+		console.log(`sendEmail time before SG response: ${end - start} ms`)
 		const [response] = await sgMail.send(msg)
+		console.log(`sendEmail time after SG response: ${end - start} ms`)
 		return { statusCode: 200, body: response }
 	} catch (error) {
 		console.error(error)
+		const end = performance.now()
+		console.log(`sendEmail time before SG response: ${end - start} ms`)
 		return { statusCode: 500, body: 'Failed to send email' }
 	}
 }
