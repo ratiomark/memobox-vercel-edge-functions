@@ -1,4 +1,5 @@
 import sgMail, { MailDataRequired } from '@sendgrid/mail'
+import { VercelRequest, VercelResponse } from '@vercel/node'
 type language = 'en' | 'ru'
 const languages: language[] = ['en', 'ru']
 
@@ -53,22 +54,26 @@ async function getSendGridDataByLangAndType(language: language, emailType: strin
 // 	const from = {
 // 		email: '
 // }
-
-export const handler = async (event: { body: EmailParams }) => {
+// export const handler = async (request: { body: EmailParams }) => {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
-		console.log('Received event:', event)
-		if (!event.body) {
-			console.error('No body found in event')
-			return { statusCode: 400, body: 'No body found in event' }
+		console.log('Received request:', req)
+		if (req.method !== 'POST') {
+			console.error('Invalid method')
+			return { statusCode: 405, body: 'Method not allowed' }
 		}
-		if (!event.body.language) {
-			event.body.language = 'en'
+		if (!req.body) {
+			console.error('No body found in request')
+			return { statusCode: 400, body: 'No body found in request' }
 		}
-		if (!event.body.to) {
+		if (!req.body.language) {
+			req.body.language = 'en'
+		}
+		if (!req.body.to) {
 			console.error('No recipient found in body')
 			return { statusCode: 400, body: 'No recipient found in body - field with name "to" is undefined' }
 		}
-		if (!event.body.emailType) {
+		if (!req.body.emailType) {
 			console.error('No emailType found in body')
 			return { statusCode: 400, body: 'No emailType found in body' }
 		}
@@ -76,10 +81,10 @@ export const handler = async (event: { body: EmailParams }) => {
 		const sendGridApiKey = process.env.SEND_GRID_API_KEY!
 		sgMail.setApiKey(sendGridApiKey)
 
-		let sendGridData = await getSendGridDataByLangAndType(event.body.language, event.body.emailType)
+		let sendGridData = await getSendGridDataByLangAndType(req.body.language, req.body.emailType)
 		if (!sendGridData) {
 			console.error('No sendGridData found')
-			sendGridData = await getSendGridDataByLangAndType('en', event.body.emailType)
+			sendGridData = await getSendGridDataByLangAndType('en', req.body.emailType)
 			if (!sendGridData) {
 				console.error('No sendGridData found')
 				return { statusCode: 400, body: 'No sendGridData found' }
@@ -90,7 +95,7 @@ export const handler = async (event: { body: EmailParams }) => {
 
 		console.log('dataTest:', sendGridData)
 
-		const { to } = event.body
+		const { to } = req.body
 
 		const msg: MailDataRequired = {
 			from: {
@@ -101,7 +106,7 @@ export const handler = async (event: { body: EmailParams }) => {
 				{
 					to: [{ email: to }],
 					dynamicTemplateData: {
-						...event.body.data,
+						...req.body.data,
 						subject,
 					},
 				},
