@@ -128,7 +128,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 	} catch (error) {
 		console.error(error)
 		const end = performance.now()
-		console.log(`sendEmail time before SG response: ${end - start} ms`)
+		console.log(`sendEmail time after error: ${end - start} ms`)
 		return { statusCode: 500, body: 'Failed to send email' }
 	}
 }
