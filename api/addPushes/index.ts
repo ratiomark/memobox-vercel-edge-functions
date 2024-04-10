@@ -24,7 +24,7 @@ interface TrainingNotificationItem {
 // Функция для добавления или обновления уведомлений
 async function upsertNotifications(items: TrainingNotificationItem[]) {
 	const db = client.db('memobox')
-	const collection = db.collection<TrainingNotificationItem>('email_notifications')
+	const collection = db.collection<TrainingNotificationItem>('push_notifications')
 	const res = await collection.createIndex({ userId: 1 }, { unique: true })
 	const res2 = await collection.createIndex({ notificationTime: 1 })
 	return { res, res2 }
