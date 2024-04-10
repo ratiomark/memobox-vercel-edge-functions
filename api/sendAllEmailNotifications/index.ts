@@ -69,7 +69,7 @@ async function correctNotificationsTime(notifications: TrainingNotificationItem[
 			},
 		},
 	}))
-	await collection.bulkWrite(operations)
+	return await collection.bulkWrite(operations)
 }
 
 async function sendEmailsForLanguage(notificationItems: TrainingNotificationItem[], sendGridData: SendGridData, language: language) {
@@ -181,8 +181,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				const responseData = await response.json() // предполагается, что сервер возвращает JSON
 				console.log('Response from backend:', responseData)
 			}
+			const rewrite = correctNotificationsTime(allNotificationItems.flat())
+			console.log(rewrite)
 			res.status(200).json(sendEmailResults)
-			correctNotificationsTime(allNotificationItems.flat())
 			// const allSendGridData = await Promise.all(sendGridDataPromises)
 			// Получение уведомлений для заданного языка
 			// const language = req.query.lang as string
