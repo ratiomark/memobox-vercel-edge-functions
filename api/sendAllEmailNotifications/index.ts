@@ -185,12 +185,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			// }
 
 			res.status(200).json(sendEmailResults)
-			await correctNotificationsTime(allNotificationItems.flat())
-			// const allSendGridData = await Promise.all(sendGridDataPromises)
-			// Получение уведомлений для заданного языка
-			// const language = req.query.lang as string
-			// const notifications = await getNotificationsByLangAndTime(language)
-			// res.status(200).json(allNotificationItems)
+			void correctNotificationsTime(allNotificationItems.flat())
 		} else {
 			res.status(405).send('Method not allowed')
 		}
