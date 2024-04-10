@@ -151,23 +151,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 			// Запускаем параллельное получение sendGridData для всех языков
 			// const sendGridData = languages.map((lang) => getSendGridDataByLangAndType(lang))
-			// const sendGridDataPromises = languages.map((lang) => getSendGridDataByLangAndType(lang))
-			// const allSendGridData = await Promise.all(sendGridDataPromises)
+			const sendGridDataPromises = languages.map((lang) => getSendGridDataByLangAndType(lang))
+			const allSendGridData = await Promise.all(sendGridDataPromises)
 
-			// const sendEmailPromises = languages.map((lang, index) => {
-			// 	const sendGridDataForLang = allSendGridData[index]
-			// 	const notificationItemsForLang = allNotificationItems[index]
-			// 	return sendEmailsForLanguage(notificationItemsForLang, sendGridDataForLang, lang)
-			// })
+			const sendEmailPromises = languages.map((lang, index) => {
+				const sendGridDataForLang = allSendGridData[index]
+				const notificationItemsForLang = allNotificationItems[index]
+				return sendEmailsForLanguage(notificationItemsForLang, sendGridDataForLang, lang)
+			})
 
-			const sendEmailResults = 'test'
+			const sendEmailResults = await Promise.all(sendEmailPromises)
 
-			// const backendUrl = await getBackendUrl()
-			// const prefix = 'api/v1/'
-			// const endpoint = 'notifications/recalculateNotifications'
+			const backendUrl = await getBackendUrl()
+			const prefix = 'api/v1/'
+			const endpoint = 'notifications/recalculateNotifications'
 
-			// console.log('sendEmailResults:  ', sendEmailResults)
-			// console.log('backend full url:  ', backendUrl + prefix + endpoint)
+			console.log('sendEmailResults:  ', sendEmailResults)
+			console.log('backend full url:  ', backendUrl + prefix + endpoint)
 
 			// const response = await fetch(backendUrl + prefix + endpoint, {
 			// 	method: 'POST',
@@ -183,9 +183,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			// 	console.log('Response from backend:', responseData)
 			// }
 
-			const rewrite = await correctNotificationsTime(allNotificationItems.flat())
-			console.log(rewrite)
 			res.status(200).json(sendEmailResults)
+			await correctNotificationsTime(allNotificationItems.flat())
 			// const allSendGridData = await Promise.all(sendGridDataPromises)
 			// Получение уведомлений для заданного языка
 			// const language = req.query.lang as string
