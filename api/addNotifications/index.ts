@@ -1,9 +1,3 @@
-// import type { VercelRequest, VercelResponse } from '@vercel/node'
-
-// export default function handler(req: VercelRequest, res: VercelResponse): void {
-// 	const message = process.env.WELCOME_MESSAGE || 'Hello from Training Push'
-// 	res.status(200).json({ message })
-// }
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { MongoClient } from 'mongodb'
 
