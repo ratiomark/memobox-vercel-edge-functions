@@ -61,9 +61,10 @@ async function correctNotificationsTime(notifications: TrainingNotificationItem[
 	}
 	const db = client.db('memobox')
 	const collection = db.collection<TrainingNotificationItem>('email_notifications')
+
 	const operations = notifications.map((notification) => ({
 		updateOne: {
-			filter: { userId: notification.notificationId },
+			filter: { notificationId: notification.notificationId },
 			update: {
 				$set: { notificationTime: new Date(notification.notificationTime.getTime() + 4 * 60 * 60 * 1000) },
 			},
