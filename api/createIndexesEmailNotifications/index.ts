@@ -23,35 +23,12 @@ interface TrainingNotificationItem {
 }
 
 // Функция для добавления или обновления уведомлений
-async function createIndexEmailNotifications(items: TrainingNotificationItem[]) {
+async function createIndexEmailNotifications() {
 	const db = client.db('memobox')
 	const collection = db.collection<TrainingNotificationItem>('email_notifications')
 	await collection.createIndex({ userId: 1 }, { unique: true })
 	await collection.createIndex({ notificationTime: 1 })
 }
-async function upsertNotifications(items: TrainingNotificationItem[]) {
-	const db = client.db('memobox')
-	const collection = db.collection<TrainingNotificationItem>('email_notifications')
-
-	const operations = items.map((item) => ({
-		updateOne: {
-			filter: { notificationId: item.notificationId },
-			update: { $set: { ...item, notificationTime: new Date(item.notificationTime) } },
-			upsert: true,
-		},
-	}))
-
-	const result = await collection.bulkWrite(operations)
-	return result
-}
-// async function upsertNotifications(items: TrainingNotificationItem[]) {
-// 	const db = client.db('memobox')
-// 	const collection = db.collection<TrainingNotificationItem>('email_notifications')
-// 	const itemsWithDate = items.map((item) => ({ ...item, notificationTime: new Date(item.notificationTime) }))
-// 	const upsertPromises = itemsWithDate.map((item) => collection.updateOne({ notificationId: item.notificationId }, { $set: item }, { upsert: true }))
-
-// 	return await Promise.all(upsertPromises)
-// }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
@@ -63,11 +40,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 		await client.connect()
 		if (req.method === 'POST') {
-			// Добавление или обновление уведомлений
-			if (!req.body) {
-				return res.status(200).json({ message: 'Request body is empty' })
-			}
-			const dbResponse = await upsertNotifications(req.body)
+			const dbResponse = await createIndexEmailNotifications()
 			console.log('Success', dbResponse)
 			res.status(200).send(dbResponse)
 		} else {
