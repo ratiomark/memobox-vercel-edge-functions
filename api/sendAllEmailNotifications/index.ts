@@ -56,6 +56,9 @@ async function getNotificationsByLangAndTime(language: string) {
 // функция которая автоматически увеличивает время следующего уведомления на 4 часа.
 // использую на случай каких либо ошибок, чтобы не скапливались уведомления
 async function correctNotificationsTime(notifications: TrainingNotificationItem[]) {
+	if (notifications.length === 0) {
+		return
+	}
 	const db = client.db('memobox')
 	const collection = db.collection<TrainingNotificationItem>('email_notifications')
 	const operations = notifications.map((notification) => ({
