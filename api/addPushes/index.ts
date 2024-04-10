@@ -22,7 +22,8 @@ interface TrainingNotificationItem {
 }
 
 // Функция для добавления или обновления уведомлений
-async function upsertNotifications(items: TrainingNotificationItem[]) {
+async function upsertNotifications() {
+	// async function upsertNotifications(items: TrainingNotificationItem[]) {
 	const db = client.db('memobox')
 	const collection = db.collection<TrainingNotificationItem>('push_notifications')
 	const res = await collection.createIndex({ userId: 1 }, { unique: true })
@@ -62,7 +63,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			// if (!req.body) {
 			// 	return res.status(200).json({ message: 'Request body is empty' })
 			// }
-			const dbResponse = await upsertNotifications({})
+			const dbResponse = await upsertNotifications()
 			// const dbResponse = await upsertNotifications(req.body)
 			console.log('Success', dbResponse)
 			res.status(200).send(dbResponse)
