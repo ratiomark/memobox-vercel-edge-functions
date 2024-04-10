@@ -62,12 +62,12 @@ async function correctNotificationsTime(notifications: TrainingNotificationItem[
 	const db = client.db('memobox')
 	const collection = db.collection<TrainingNotificationItem>('email_notifications')
 
-	const afterFourHours = new Date().getTime() + 4 * 60 * 60 * 1000
+	const afterFourHours = new Date(new Date().getTime() + 4 * 60 * 60 * 1000)
 	const operations = notifications.map((notification) => ({
 		updateOne: {
 			filter: { notificationId: notification.notificationId },
 			update: {
-				$set: { notificationTime: new Date(afterFourHours) },
+				$set: { ...notification, notificationTime: afterFourHours },
 			},
 		},
 	}))
@@ -150,6 +150,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			const notificationItemsPromises = languages.map((lang) => getNotificationsByLangAndTime(lang))
 			const allNotificationItems = (await Promise.all(notificationItemsPromises)) as TrainingNotificationItem[][]
 
+			await correctNotificationsTime(allNotificationItems.flat())
 			// Запускаем параллельное получение sendGridData для всех языков
 			// const sendGridData = languages.map((lang) => getSendGridDataByLangAndType(lang))
 			const sendGridDataPromises = languages.map((lang) => getSendGridDataByLangAndType(lang))
@@ -185,7 +186,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			}
 
 			res.status(200).json(sendEmailResults)
-			await correctNotificationsTime(allNotificationItems.flat())
+			// await correctNotificationsTime(allNotificationItems.flat())
 		} else {
 			res.status(405).send('Method not allowed')
 		}
