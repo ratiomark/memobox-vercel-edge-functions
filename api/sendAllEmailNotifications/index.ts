@@ -185,7 +185,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			// }
 
 			res.status(200).json(sendEmailResults)
-			void correctNotificationsTime(allNotificationItems.flat())
+			await correctNotificationsTime(allNotificationItems.flat())
 		} else {
 			res.status(405).send('Method not allowed')
 		}
