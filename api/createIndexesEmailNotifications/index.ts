@@ -26,7 +26,7 @@ interface TrainingNotificationItem {
 async function createIndexEmailNotifications() {
 	const db = client.db('memobox')
 	const collection = db.collection<TrainingNotificationItem>('email_notifications')
-	await collection.createIndex({ userId: 1 }, { unique: true })
+	await collection.createIndex({ notificationId: 1 }, { unique: true })
 	await collection.createIndex({ notificationTime: 1 })
 }
 
