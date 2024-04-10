@@ -5,7 +5,7 @@
 // 	res.status(200).json({ message })
 // }
 import { VercelRequest, VercelResponse } from '@vercel/node'
-import { MongoClient } from 'mongodb'
+import { MongoClient, WithId } from 'mongodb'
 import sgMail from '@sendgrid/mail'
 type language = 'en' | 'ru'
 const languages: language[] = ['en', 'ru']
@@ -48,8 +48,25 @@ async function getNotificationsByLangAndTime(language: string) {
 			notificationTime: { $lt: twoMinutesLater },
 		})
 		.toArray()
+
 	console.log('notifications', notifications)
 	return notifications
+}
+
+// функция которая автоматически увеличивает время следующего уведомления на 4 часа.
+// использую на случай каких либо ошибок, чтобы не скапливались уведомления
+async function correctNotificationsTime(notifications: TrainingNotificationItem[]) {
+	const db = client.db('memobox')
+	const collection = db.collection<TrainingNotificationItem>('email_notifications')
+	const operations = notifications.map((notification) => ({
+		updateOne: {
+			filter: { userId: notification.notificationId },
+			update: {
+				$set: { notificationTime: new Date(notification.notificationTime.getTime() + 4 * 60 * 60 * 1000) },
+			},
+		},
+	}))
+	await collection.bulkWrite(operations)
 }
 
 async function sendEmailsForLanguage(notificationItems: TrainingNotificationItem[], sendGridData: SendGridData, language: language) {
@@ -161,7 +178,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				const responseData = await response.json() // предполагается, что сервер возвращает JSON
 				console.log('Response from backend:', responseData)
 			}
-			return res.status(200).json(sendEmailResults)
+			res.status(200).json(sendEmailResults)
+			correctNotificationsTime(allNotificationItems.flat())
 			// const allSendGridData = await Promise.all(sendGridDataPromises)
 			// Получение уведомлений для заданного языка
 			// const language = req.query.lang as string
