@@ -151,37 +151,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 			// Запускаем параллельное получение sendGridData для всех языков
 			// const sendGridData = languages.map((lang) => getSendGridDataByLangAndType(lang))
-			const sendGridDataPromises = languages.map((lang) => getSendGridDataByLangAndType(lang))
-			const allSendGridData = await Promise.all(sendGridDataPromises)
+			// const sendGridDataPromises = languages.map((lang) => getSendGridDataByLangAndType(lang))
+			// const allSendGridData = await Promise.all(sendGridDataPromises)
 
-			const sendEmailPromises = languages.map((lang, index) => {
-				const sendGridDataForLang = allSendGridData[index]
-				const notificationItemsForLang = allNotificationItems[index]
-				return sendEmailsForLanguage(notificationItemsForLang, sendGridDataForLang, lang)
-			})
+			// const sendEmailPromises = languages.map((lang, index) => {
+			// 	const sendGridDataForLang = allSendGridData[index]
+			// 	const notificationItemsForLang = allNotificationItems[index]
+			// 	return sendEmailsForLanguage(notificationItemsForLang, sendGridDataForLang, lang)
+			// })
 
-			const sendEmailResults = await Promise.all(sendEmailPromises)
+			const sendEmailResults = 'test'
 
-			const backendUrl = await getBackendUrl()
-			const prefix = 'api/v1/'
-			const endpoint = 'notifications/recalculateNotifications'
+			// const backendUrl = await getBackendUrl()
+			// const prefix = 'api/v1/'
+			// const endpoint = 'notifications/recalculateNotifications'
 
-			console.log('sendEmailResults:  ', sendEmailResults)
-			console.log('backend full url:  ', backendUrl + prefix + endpoint)
+			// console.log('sendEmailResults:  ', sendEmailResults)
+			// console.log('backend full url:  ', backendUrl + prefix + endpoint)
 
-			const response = await fetch(backendUrl + prefix + endpoint, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(sendEmailResults),
-			})
+			// const response = await fetch(backendUrl + prefix + endpoint, {
+			// 	method: 'POST',
+			// 	headers: { 'Content-Type': 'application/json' },
+			// 	body: JSON.stringify(sendEmailResults),
+			// })
 
-			if (!response.ok) {
-				// Обработка ошибок HTTP, если статус ответа не успешен
-				throw new Error(`HTTP error! status: ${response.status}`)
-			} else {
-				const responseData = await response.json() // предполагается, что сервер возвращает JSON
-				console.log('Response from backend:', responseData)
-			}
+			// if (!response.ok) {
+			// 	// Обработка ошибок HTTP, если статус ответа не успешен
+			// 	throw new Error(`HTTP error! status: ${response.status}`)
+			// } else {
+			// 	const responseData = await response.json() // предполагается, что сервер возвращает JSON
+			// 	console.log('Response from backend:', responseData)
+			// }
+
 			const rewrite = await correctNotificationsTime(allNotificationItems.flat())
 			console.log(rewrite)
 			res.status(200).json(sendEmailResults)
