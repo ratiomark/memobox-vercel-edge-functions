@@ -95,7 +95,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 			console.log('backend full url:  ', backendUrl + prefix + endpoint)
 
-			const response = await fetch(backendUrl + prefix + endpoint, {
+			// const response = await fetch(backendUrl + prefix + endpoint, {
+			await fetch(backendUrl + prefix + endpoint, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey! },
 				body: JSON.stringify(pushRequest),
