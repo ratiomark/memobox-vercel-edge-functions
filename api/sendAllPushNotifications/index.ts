@@ -33,7 +33,7 @@ async function getNotificationsByLangAndTime(language: string) {
 		})
 		.toArray()
 
-	console.log('notifications', notifications)
+	console.log('push_notifications', notifications)
 	return notifications
 }
 
