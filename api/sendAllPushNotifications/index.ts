@@ -29,7 +29,7 @@ async function getNotificationsByLangAndTime(language: string) {
 	const notifications = await collection
 		.find({
 			user_language: language,
-			notificationTime: { $lt: twoMinutesLater },
+			// notificationTime: { $lt: twoMinutesLater },
 		})
 		.toArray()
 
@@ -97,7 +97,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 			const response = await fetch(backendUrl + prefix + endpoint, {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
+				headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey! },
 				body: JSON.stringify(pushRequest),
 			})
 
