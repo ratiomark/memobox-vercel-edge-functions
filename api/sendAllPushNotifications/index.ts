@@ -101,13 +101,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				body: JSON.stringify(pushRequest),
 			})
 
-			if (!response.ok) {
-				// Обработка ошибок HTTP, если статус ответа не успешен
-				throw new Error(`HTTP error! status: ${response.status}`)
-			} else {
-				const responseData = await response.json() // предполагается, что сервер возвращает JSON
-				console.log('Response from backend:', responseData)
-			}
+			// if (!response.ok) {
+			// 	// Обработка ошибок HTTP, если статус ответа не успешен
+			// 	throw new Error(`HTTP error! status: ${response.status}`)
+			// } else {
+			// 	const responseData = await response.json() // предполагается, что сервер возвращает JSON
+			// 	console.log('Response from backend:', responseData)
+			// }
 
 			res.status(200).json(pushRequest)
 		} else {
