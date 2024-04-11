@@ -5,26 +5,17 @@
 // 	res.status(200).json({ message })
 // }
 import { VercelRequest, VercelResponse } from '@vercel/node'
-import { MongoClient, WithId } from 'mongodb'
+import { MongoClient } from 'mongodb'
 import sgMail from '@sendgrid/mail'
-type language = 'en' | 'ru'
-const languages: language[] = ['en', 'ru']
+import { NotificationType, dbName, emailCollectionName, languages } from '../../common/const'
+import { EmailTrainingNotificationItem, language } from '../../common/types/trainings-types'
+
 const uri = process.env.MONGO_URL
 const API_SECRET_KEY = process.env.API_SECRET_KEY
 if (!uri) {
 	throw new Error('Mongo URL is not provided')
 }
 const client = new MongoClient(uri)
-const NotificationType = 'trainingNotification'
-
-interface TrainingNotificationItem {
-	notificationId: string
-	notificationTime: Date
-	email: string
-	user_language: string
-	notificationType: string
-	name: string
-}
 
 interface FromObject {
 	email: string
@@ -38,8 +29,8 @@ interface SendGridData extends FromObject {
 
 // Функция для получения уведомлений по языку пользователя и времени
 async function getNotificationsByLangAndTime(language: string) {
-	const db = client.db('memobox')
-	const collection = db.collection<TrainingNotificationItem>('email_notifications')
+	const db = client.db(dbName)
+	const collection = db.collection<EmailTrainingNotificationItem>(emailCollectionName)
 
 	const twoMinutesLater = new Date(new Date().getTime() + 2 * 60 * 1000)
 	const notifications = await collection
@@ -55,12 +46,12 @@ async function getNotificationsByLangAndTime(language: string) {
 
 // функция которая автоматически увеличивает время следующего уведомления на 4 часа.
 // использую на случай каких либо ошибок, чтобы не скапливались уведомления
-async function correctNotificationsTime(notifications: TrainingNotificationItem[]) {
+async function correctNotificationsTime(notifications: EmailTrainingNotificationItem[]) {
 	if (notifications.length === 0) {
 		return
 	}
-	const db = client.db('memobox')
-	const collection = db.collection<TrainingNotificationItem>('email_notifications')
+	const db = client.db(dbName)
+	const collection = db.collection<EmailTrainingNotificationItem>(emailCollectionName)
 
 	const afterFourHours = new Date(new Date().getTime() + 4 * 60 * 60 * 1000)
 	const operations = notifications.map((notification) => ({
@@ -74,7 +65,7 @@ async function correctNotificationsTime(notifications: TrainingNotificationItem[
 	return await collection.bulkWrite(operations)
 }
 
-async function sendEmailsForLanguage(notificationItems: TrainingNotificationItem[], sendGridData: SendGridData, language: language) {
+async function sendEmailsForLanguage(notificationItems: EmailTrainingNotificationItem[], sendGridData: SendGridData, language: language) {
 	if (notificationItems.length === 0) {
 		console.log(`No notifications to send for language ${language}`)
 		return { language, response: null, statusCode: 200, message: 'No notifications to send', notificationIds: [] }
@@ -134,7 +125,6 @@ async function getBackendUrl() {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
-		await client.connect()
 		const apiKey = req.headers['x-api-key']
 		// console.log('req.body', req.body)
 		if (apiKey !== API_SECRET_KEY) {
@@ -147,10 +137,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		}
 		sgMail.setApiKey(sendGridApiKey)
 		if (req.method === 'POST') {
+			await client.connect()
 			const notificationItemsPromises = languages.map((lang) => getNotificationsByLangAndTime(lang))
-			const allNotificationItems = (await Promise.all(notificationItemsPromises)) as TrainingNotificationItem[][]
+			const allNotificationItems = (await Promise.all(notificationItemsPromises)) as EmailTrainingNotificationItem[][]
 
+			// сразу же увеличиваем время уведомлений на 4 часа
 			await correctNotificationsTime(allNotificationItems.flat())
+			
 			// Запускаем параллельное получение sendGridData для всех языков
 			// const sendGridData = languages.map((lang) => getSendGridDataByLangAndType(lang))
 			const sendGridDataPromises = languages.map((lang) => getSendGridDataByLangAndType(lang))
@@ -186,7 +179,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			}
 
 			res.status(200).json(sendEmailResults)
-			// await correctNotificationsTime(allNotificationItems.flat())
 		} else {
 			res.status(405).send('Method not allowed')
 		}

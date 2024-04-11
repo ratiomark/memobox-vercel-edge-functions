@@ -1,31 +1,19 @@
-// import type { VercelRequest, VercelResponse } from '@vercel/node'
-
-// export default function handler(req: VercelRequest, res: VercelResponse): void {
-// 	const message = process.env.WELCOME_MESSAGE || 'Hello from Training Push'
-// 	res.status(200).json({ message })
-// }
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { MongoClient } from 'mongodb'
+import { EmailTrainingNotificationItem } from '../../common/types/trainings-types'
+import { dbName, emailCollectionName } from '../../common/const'
 
 const uri = process.env.MONGO_URL
 const API_SECRET_KEY = process.env.API_SECRET_KEY
 if (!uri) {
 	throw new Error('Mongo URL is not provided')
 }
-const client = new MongoClient(uri)
-interface TrainingNotificationItem {
-	notificationId: string
-	notificationTime: Date
-	email: string
-	user_language: string
-	notificationType: string
-	name: string
-}
 
-// Функция для добавления или обновления уведомлений
+const client = new MongoClient(uri)
+
 async function createIndexEmailNotifications() {
-	const db = client.db('memobox')
-	const collection = db.collection<TrainingNotificationItem>('email_notifications')
+	const db = client.db(dbName)
+	const collection = db.collection<EmailTrainingNotificationItem>(emailCollectionName)
 	await collection.createIndex({ notificationId: 1 }, { unique: true })
 	await collection.createIndex({ notificationTime: 1 })
 }
@@ -33,11 +21,9 @@ async function createIndexEmailNotifications() {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	try {
 		const apiKey = req.headers['x-api-key']
-		console.log('req.body', req.body)
 		if (apiKey !== API_SECRET_KEY) {
 			return res.status(401).json({ message: 'Invalid API Key' })
 		}
-
 		if (req.method === 'POST') {
 			await client.connect()
 			const dbResponse = await createIndexEmailNotifications()

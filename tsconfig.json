@@ -8,8 +8,10 @@
     "strict": true
   },
   "include": [
-    "api/**/*"
+    "api/**/*",
+    "common/types"
   ],
+  "baseUrl": "./",
   "exclude": [
     "node_modules",
     "dist"

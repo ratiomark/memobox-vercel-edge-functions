@@ -1,7 +1,6 @@
 import sgMail, { MailDataRequired } from '@sendgrid/mail'
 import { VercelRequest, VercelResponse } from '@vercel/node'
-type language = 'en' | 'ru'
-const languages: language[] = ['en', 'ru']
+import { language } from '../../common/types/trainings-types'
 
 interface EmailParams {
 	to: string

@@ -1,5 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { MongoClient } from 'mongodb'
+import { EmailTrainingNotificationItem } from '../../common/types/trainings-types'
+import { dbName, emailCollectionName } from '../../common/const'
 
 const uri = process.env.MONGO_URL
 const API_SECRET_KEY = process.env.API_SECRET_KEY
@@ -7,19 +9,11 @@ if (!uri) {
 	throw new Error('Mongo URL is not provided')
 }
 const client = new MongoClient(uri)
-interface TrainingNotificationItem {
-	notificationId: string
-	notificationTime: Date
-	email: string
-	user_language: string
-	notificationType: string
-	name: string
-}
 
 // Функция для добавления или обновления уведомлений
-async function upsertNotifications(items: TrainingNotificationItem[]) {
-	const db = client.db('memobox')
-	const collection = db.collection<TrainingNotificationItem>('email_notifications')
+async function upsertNotifications(items: EmailTrainingNotificationItem[]) {
+	const db = client.db(dbName)
+	const collection = db.collection<EmailTrainingNotificationItem>(emailCollectionName)
 
 	const operations = items.map((item) => ({
 		updateOne: {
@@ -32,9 +26,9 @@ async function upsertNotifications(items: TrainingNotificationItem[]) {
 	const result = await collection.bulkWrite(operations)
 	return result
 }
-// async function upsertNotifications(items: TrainingNotificationItem[]) {
+// async function upsertNotifications(items: EmailTrainingNotificationItem[]) {
 // 	const db = client.db('memobox')
-// 	const collection = db.collection<TrainingNotificationItem>('email_notifications')
+// 	const collection = db.collection<EmailTrainingNotificationItem>(emailCollectionName)
 // 	const itemsWithDate = items.map((item) => ({ ...item, notificationTime: new Date(item.notificationTime) }))
 // 	const upsertPromises = itemsWithDate.map((item) => collection.updateOne({ notificationId: item.notificationId }, { $set: item }, { upsert: true }))
 
@@ -49,12 +43,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			return res.status(401).json({ message: 'Invalid API Key' })
 		}
 
-		await client.connect()
 		if (req.method === 'POST') {
 			// Добавление или обновление уведомлений
 			if (!req.body) {
 				return res.status(200).json({ message: 'Request body is empty' })
 			}
+			await client.connect()
 			const dbResponse = await upsertNotifications(req.body)
 			console.log('Success', dbResponse)
 			res.status(200).send(dbResponse)
