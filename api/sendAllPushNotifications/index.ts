@@ -29,7 +29,7 @@ async function getNotificationsByLangAndTime(language: string) {
 	const notifications = await collection
 		.find({
 			user_language: language,
-			// notificationTime: { $lt: twoMinutesLater },
+			notificationTime: { $lt: twoMinutesLater },
 		})
 		.toArray()
 

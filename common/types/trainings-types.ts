@@ -11,6 +11,6 @@ export interface PushTrainingNotificationItem {
 	notificationId: string
 	notificationTime: Date
 	user_language: string
-	name: string
+	// name: string
 }
 export type language = 'en' | 'ru'
