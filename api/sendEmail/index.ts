@@ -122,8 +122,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 		const end = performance.now()
 		console.log(`sendEmail time before SG response: ${end - start} ms`)
 		const [response] = await sgMail.send(msg)
+		const responseData = response.toString()
+		const responseBodyData = response.body.toString()
 		console.log(`sendEmail time after SG response: ${end - start} ms`)
-		return { statusCode: 200, body: response.toString() }
+		console.log(`responseData  `, responseData)
+		console.log(`responseBodyData  `, responseBodyData)
+		return { statusCode: 200, body: response.body.toString() }
 	} catch (error) {
 		console.error(error)
 		const end = performance.now()
