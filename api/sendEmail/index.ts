@@ -119,14 +119,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 			],
 			templateId,
 		}
-		const end = performance.now()
+		let end = performance.now()
 		console.log(`sendEmail time before SG response: ${end - start} ms`)
 		const [response] = await sgMail.send(msg)
-		return { statusCode: 200, body: response }
+		// const responseData = JSON.stringify(response, null, 3)
+		// const responseBodyData = JSON.stringify(response.body, null, 3)
+		end = performance.now()
+		console.log(`sendEmail time after SG response: ${end - start} ms`)
+		// console.log(`responseData  `, responseData)
+		// console.log(`responseBodyData  `, responseBodyData)
+		// return { statusCode: 200, body: response }
+		res.status(200).send(response)
 	} catch (error) {
 		console.error(error)
 		const end = performance.now()
 		console.log(`sendEmail time after error: ${end - start} ms`)
-		return { statusCode: 500, body: 'Failed to send email' }
+		res.status(500).send('Failed to send email')
+		// return { statusCode: 500, body: 'Failed to send email' }
 	}
 }
