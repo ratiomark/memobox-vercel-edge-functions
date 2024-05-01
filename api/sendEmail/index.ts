@@ -56,85 +56,89 @@ async function getSendGridDataByLangAndType(language: language, emailType: strin
 // export const handler = async (request: { body: EmailParams }) => {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
 	const start = performance.now()
-	try {
-		console.log('Received request:', req.body)
-		// console.log('Received request:', req)
-		if (req.method !== 'POST') {
-			console.error('Invalid method')
-			return { statusCode: 405, body: 'Method not allowed' }
-		}
-		if (!req.body) {
-			console.error('No body found in request')
-			return { statusCode: 400, body: 'No body found in request' }
-		}
-		if (!req.body.language) {
-			req.body.language = 'en'
-		}
-		if (!req.body.to) {
-			console.error('No recipient found in body')
-			return { statusCode: 400, body: 'No recipient found in body - field with name "to" is undefined' }
-		}
-		if (!req.body.emailType) {
-			console.error('No emailType found in body')
-			return { statusCode: 400, body: 'No emailType found in body' }
-		}
+	  try {
+			console.log('Received request:', req.body)
 
-		const sendGridApiKey = process.env.SEND_GRID_API_KEY
+			if (req.method !== 'POST') {
+				console.error('Invalid method')
+				return res.status(405).send('Method not allowed')
+			}
 
-		if (!sendGridApiKey) {
-			throw new Error('SendGrid API key is not provided. End edge function execution.')
-		}
-		sgMail.setApiKey(sendGridApiKey)
+			if (!req.body) {
+				console.error('No body found in request')
+				return res.status(400).send('No body found in request')
+			}
 
-		let sendGridData = await getSendGridDataByLangAndType(req.body.language, req.body.emailType)
-		if (!sendGridData) {
-			console.error('No sendGridData found')
-			sendGridData = await getSendGridDataByLangAndType('en', req.body.emailType)
+			if (!req.body.language) {
+				req.body.language = 'en' // Default language
+			}
+
+			if (!req.body.to) {
+				console.error('No recipient found in body')
+				return res.status(400).send('No recipient found in body - field with name "to" is undefined')
+			}
+
+			if (!req.body.emailType) {
+				console.error('No emailType found in body')
+				return res.status(400).send('No emailType found in body')
+			}
+
+			const sendGridApiKey = process.env.SEND_GRID_API_KEY
+
+			if (!sendGridApiKey) {
+				throw new Error('SendGrid API key is not provided. End edge function execution.')
+			}
+			sgMail.setApiKey(sendGridApiKey)
+
+			let sendGridData = await getSendGridDataByLangAndType(req.body.language, req.body.emailType)
 			if (!sendGridData) {
 				console.error('No sendGridData found')
-				return { statusCode: 400, body: 'No sendGridData found' }
+				sendGridData = await getSendGridDataByLangAndType('en', req.body.emailType)
+				if (!sendGridData) {
+					console.error('No sendGridData found')
+					return { statusCode: 400, body: 'No sendGridData found' }
+				}
 			}
-		}
-		// const start = performance.now()
+			// const start = performance.now()
 
-		const { name, email, templateId, subject } = sendGridData
+			const { name, email, templateId, subject } = sendGridData
 
-		console.log('dataTest:', sendGridData)
+			console.log('dataTest:', sendGridData)
 
-		const { to } = req.body
+			const { to } = req.body
 
-		const msg: MailDataRequired = {
-			from: {
-				email,
-				name: 'Memobox',
-			},
-			personalizations: [
-				{
-					to: [{ email: to }],
-					dynamicTemplateData: {
-						...req.body.data,
-						subject,
-					},
+			const msg: MailDataRequired = {
+				from: {
+					email,
+					name: 'Memobox',
 				},
-			],
-			templateId,
+				personalizations: [
+					{
+						to: [{ email: to }],
+						dynamicTemplateData: {
+							...req.body.data,
+							subject,
+						},
+					},
+				],
+				templateId,
+			}
+			let end = performance.now()
+			console.log(`sendEmail time before SG response: ${end - start} ms`)
+			const [response] = await sgMail.send(msg)
+			// const responseData = JSON.stringify(response, null, 3)
+			// const responseBodyData = JSON.stringify(response.body, null, 3)
+			end = performance.now()
+			console.log(`sendEmail time after SG response: ${end - start} ms`)
+			// console.log(`responseData  `, responseData)
+			// console.log(`responseBodyData  `, responseBodyData)
+			// return { statusCode: 200, body: response }
+			res.status(200).send(response)
+		} catch (error) {
+			console.error(error)
+			const end = performance.now()
+			console.log(`sendEmail time after error: ${end - start} ms`)
+			res.status(500).send('Failed to send email')
+			// return { statusCode: 500, body: 'Failed to send email' }
 		}
-		let end = performance.now()
-		console.log(`sendEmail time before SG response: ${end - start} ms`)
-		const [response] = await sgMail.send(msg)
-		// const responseData = JSON.stringify(response, null, 3)
-		// const responseBodyData = JSON.stringify(response.body, null, 3)
-		end = performance.now()
-		console.log(`sendEmail time after SG response: ${end - start} ms`)
-		// console.log(`responseData  `, responseData)
-		// console.log(`responseBodyData  `, responseBodyData)
-		// return { statusCode: 200, body: response }
-		res.status(200).send(response)
-	} catch (error) {
-		console.error(error)
-		const end = performance.now()
-		console.log(`sendEmail time after error: ${end - start} ms`)
-		res.status(500).send('Failed to send email')
-		// return { statusCode: 500, body: 'Failed to send email' }
-	}
 }
