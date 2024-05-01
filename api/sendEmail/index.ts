@@ -96,7 +96,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				sendGridData = await getSendGridDataByLangAndType('en', req.body.emailType)
 				if (!sendGridData) {
 					console.error('No sendGridData found')
-					return { statusCode: 400, body: 'No sendGridData found' }
+					return res.status(404).send('No sendGridData found')
 				}
 			}
 			// const start = performance.now()
